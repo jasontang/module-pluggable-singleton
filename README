@@ -1,55 +1,81 @@
-Module-Pluggable-Singleton
-
-The README is used to introduce the module and provide instructions on
-how to install the module, any machine dependencies it may have (for
-example C compilers and installed libraries) and any other information
-that should be provided before the module is installed.
-
-A README file is required for CPAN modules since CPAN extracts the README
-file from a module distribution so that people browsing the archive
-can use it to get an idea of the module's uses. It is usually a good idea
-to provide version information here so that people can decide whether
-fixes for the module are worth downloading.
+Module::Pluggable::SinUseroContributed Perl DocModule::Pluggable::Singleton(3)
 
 
-INSTALLATION
 
-To install this module, run the following commands:
+NAME
+       Module::Pluggable::Singleton - call/return single plugins on demand
+       using shortened names
 
-	perl Makefile.PL
-	make
-	make test
-	make install
+VERSION
+       Version 0.01
 
-SUPPORT AND DOCUMENTATION
+SYNOPSIS
+           package MyPluggable;
+           use Module::Pluggable::Singleton;
 
-After installing, you can find documentation for this module with the
-perldoc command.
+           my $plugins = MyPluggable->plugin;
+           my $nick = MyPluggable->call('Robert','nickname',$person->full_name);
 
-    perldoc Module::Pluggable::Singleton
+DESCRIPTION
+METHODS
+   find($name)
+       Return the instance of the plugin with the given name
 
-You can also look for information at:
+           $plugin = $logic->find('Bar');
 
-    RT, CPAN's request tracker
-        http://rt.cpan.org/NoAuth/Bugs.html?Dist=Module-Pluggable-Singleton
+   plugin($name)
+       Return an array of the shortened available plugins or the full name of
+       the module when a short name is given
 
-    AnnoCPAN, Annotated CPAN documentation
-        http://annocpan.org/dist/Module-Pluggable-Singleton
+           my @plugin_short = $logic->plugin
+           my $plugin_long = $logic->plugin($name);
 
-    CPAN Ratings
-        http://cpanratings.perl.org/d/Module-Pluggable-Singleton
+   call($plugin_name, $method, $params)
+       Using the plugin $plugin_name call $method with $params
 
-    Search CPAN
-        http://search.cpan.org/dist/Module-Pluggable-Singleton/
+           $rv = $logic->call($plugin_name, $method, $params)
+AUTHOR
+       Jason Tang, "<tang.jason.ch at gmail.com>"
 
+BUGS
+       Please report any bugs or feature requests to
+       "bug-module-pluggable-singleton at rt.cpan.org", or through the web
+       interface at
+       <http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Module-Pluggable-Singleton>.
+       I will be notified, and then you'll automatically be notified of
+       progress on your bug as I make changes.
+
+SEE ALSO
+       Module::Pluggable::Object
+
+SUPPORT
+       You can find documentation for this module with the perldoc command.
+
+           perldoc Module::Pluggable::Singleton
+
+       You can also look for information at:
+
+       ·   RT: CPAN's request tracker
+
+           <http://rt.cpan.org/NoAuth/Bugs.html?Dist=Module-Pluggable-Singleton>
+
+       ·   AnnoCPAN: Annotated CPAN documentation
+
+           <http://annocpan.org/dist/Module-Pluggable-Singleton>
+
+       ·   CPAN Ratings
+
+           <http://cpanratings.perl.org/d/Module-Pluggable-Singleton>
+
+       ·   Search CPAN
+           <http://search.cpan.org/dist/Module-Pluggable-Singleton/>
 
 LICENSE AND COPYRIGHT
+       Copyright 2011 Jason Tang.
 
-Copyright (C) 2011 Jason Tang
+       This program is free software; you can redistribute it and/or modify it
+       under the terms of either: the GNU General Public License as published
+       by the Free Software Foundation; or the Artistic License.
 
-This program is free software; you can redistribute it and/or modify it
-under the terms of either: the GNU General Public License as published
-by the Free Software Foundation; or the Artistic License.
-
-See http://dev.perl.org/licenses/ for more information.
+       See http://dev.perl.org/licenses/ for more information.
 

@@ -89,13 +89,13 @@ sub import {
         my($self,$label) = @_;
 
         if (!defined $label) {
-            warn __PACKAGE__ .": Not provided name of plugin";
+            die "Not provided name of plugin";
             return;
         }
 
         my $name = $plugin_for->{$label} || undef;
         if (!defined $name) {
-            die __PACKAGE__ .": Not possible to load module '$label'";
+            die "Not possible to load module '$label'";
         }
 
 
@@ -130,14 +130,14 @@ sub import {
         }
 
         if (!defined $method) {
-            die __PACKAGE__ .": Method name not provided";
+            die "Method name not provided";
             return;
         }
 
 
         my $instance = $self->find($label);
         if (!$instance->can($method)) {
-            die __PACKAGE__ .": Cannot call '$method' on '$label' plugin";
+            die "Cannot call '$method' on '$label' plugin";
         }
 
         return $instance->$method(@_);

@@ -27,15 +27,6 @@ my $tests = [
     },
 ];
 
-note "Plugins available:\n";
-#foreach my $method (qw/plugin call/) {
-#    if (XT::Business->can($method)) {
-#        note "$method: yups\n";
-#    } else {
-#        note "$method: nope\n";
-#    }
-#}
-
 is(scalar XT::Business->plugin, 1,
     'Found one plugin');
 is(XT::Business->plugin('Bar'),'XT::Business::Plugin::Bar',
@@ -45,29 +36,28 @@ is(XT::Business->plugin('Baz'),undef,
 
 my $rv;
 
-#foreach my $test (@{$tests}) {
-#    my $label = 'Bar';
-#    eval {
-#        $rv = XT::Business->call($test->{label}, $test->{method}, $test->{params});
-#    };
-#    if (my $e = $@) {
-#        if ($test->{error}) {
-#            my $foo = $test->{error};
-#
+foreach my $test (@{$tests}) {
+    my $label = 'Bar';
+    eval {
+        $rv = XT::Business->call(
+            $test->{label}, $test->{method}, $test->{params});
+    };
+    if (my $e = $@) {
+        if ($test->{error}) {
+            my $foo = $test->{error};
+
+            like($e, qr/$foo/, "Matched expected error - $foo");
 #            is($e =~ /$foo/, 'blah', 'Matched expected error');
-##            if ($e =~ /$foo/i) {
-##                warn __PACKAGE__ .": not matching error - $foo";
-##            }
-#        } else {
-#            warn __PACKAGE__ .": error when test not expecting";
-#        }
-#
-#        note "Error: $e\n";
-#    } else {
-#        if ($test->{error}) {
-#            warn __PACKAGE__ .": should be an error";
-#        }
-#    }
-#}
+#            if ($e =~ /$foo/i) {
+#                warn __PACKAGE__ .": not matching error - $foo";
+#            }
+        } else {
+            is(0,1,"Error when test not expecting");
+        }
+
+    } else {
+        is(defined $test->{error},'', 'Should be an error');
+    }
+}
 
 done_testing;
