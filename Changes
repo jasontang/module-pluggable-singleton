@@ -3,3 +3,6 @@ Revision history for Module-Pluggable-Singleton
 0.01    2011/02/15
         First version, released on an unsuspecting world.
 
+Revision history for {{$dist->name}}
+
+{{$NEXT}}
