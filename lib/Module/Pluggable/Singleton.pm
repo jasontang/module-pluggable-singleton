@@ -16,7 +16,7 @@ Version 0.01
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.2.1';
 
 =head1 SYNOPSIS
 
@@ -141,7 +141,7 @@ sub import {
     };
 
     my $call_sub = sub {
-        my($self,$shortname,$method) = shift @_;
+        my($self,$shortname,$method) = @_;
 
         if (!defined $shortname) {
             die "$caller: Plugin name not provided";

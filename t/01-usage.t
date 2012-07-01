@@ -38,6 +38,7 @@ my $rv;
 
 foreach my $test (@{$tests}) {
     my $label = 'Bar';
+    note "  call: '$test->{label}' '$test->{method}' '$test->{params}'";
     eval {
         $rv = XT::Business->call(
             $test->{label}, $test->{method}, $test->{params});
@@ -52,6 +53,7 @@ foreach my $test (@{$tests}) {
 #                warn __PACKAGE__ .": not matching error - $foo";
 #            }
         } else {
+            diag $e;
             is(0,1,"Error when test not expecting");
         }
 
