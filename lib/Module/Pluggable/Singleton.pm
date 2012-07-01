@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use Module::Pluggable::Object;
 use Carp;
+use Data::Dump qw/pp/;
 
 =head1 NAME
 
@@ -15,12 +16,19 @@ Version 0.01
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 SYNOPSIS
 
     package MyPluggable;
     use Module::Pluggable::Singleton;
+
+    my $plugins = MyPluggable->plugin;
+    my @plugins = MyPluggable->plugin;
+
+    my @plugins = MyPluggable->plugins;
+
+    my $plugin_long = $logic->plugin($name);
 
     my $plugins = MyPluggable->plugin;
     my $nick = MyPluggable->call('Robert','nickname',$person->full_name);
@@ -31,7 +39,7 @@ our $VERSION = '0.01';
 
 =head2 find($name)
 
-Return the instance of the plugin with the given name
+Return the instance of the plugin with given short name
 
     $plugin = $logic->find('Bar');
 
@@ -42,6 +50,10 @@ module when a short name is given
 
     my @plugin_short = $logic->plugin
     my $plugin_long = $logic->plugin($name);
+
+=head2 plugin($name)
+
+Return an array of all the module names
 
 =head2 call($plugin_name, $method, $params)
 
@@ -54,23 +66,32 @@ Using the plugin $plugin_name call $method with $params
 sub import {
     my ($class, %opts) = @_;
     my $caller = (caller)[0];
-    require Module::Pluggable;
+    $opts{require} = 1; # you find out earlier if it has a syntax error
+    $opts{package} = $caller;
 
-    $opts{search_path} = "${caller}::Plugin";
-    Module::Pluggable->import(
-        package     => $caller,
-        search_path => $opts{search_path},
-        require => 1
-    );
+    my $finder = Module::Pluggable::Object->new(%opts);
+    print "Can plugins\n" if ($finder->can('plugins'));
 
-    my $namespace  = "${caller}::Plugin";
-    my $base_class = "${caller}::Base";
-    my $to_chop    = "${namespace}";
-    my $plugin_for = { };
-    my $instance_of = { };
-    foreach my $plugin ($caller->plugins) {
+    if (!$opts{search_path}) {
+        $opts{search_path} = "${caller}::Plugin";
+    }
+    if ($opts{search_path}) {
+        if (ref($opts{search_path}) eq '') {
+            $opts{search_path} = [$opts{search_path}];
+        }
+    }
+
+    my $namespace  = "${caller}::". ucfirst($opts{sub_name} || 'plugins');
+    my $sub_name = $opts{sub_name} || 'plugins';
+    my $plugin_for = { }; # maps shortname to module name
+    my $instance_of = { }; # instances
+
+    foreach my $plugin ($finder->plugins) {
         my $shortname = $plugin;
-        $shortname =~ s/^${to_chop}:://;
+        print " ==> module: $plugin\n";
+        foreach my $path (@{$opts{search_path}}) {
+            $shortname =~ s/^${path}:://;
+        }
 
 # FIXME:
 #        if (not $plugin->isa($base_class)) {
@@ -79,53 +100,51 @@ sub import {
 #        }
 
         if (exists $plugin_for->{$shortname}) {
-            confess __PACKAGE__ .": Plugin already exists for '$shortname'";
+            confess "$caller: Plugin already exists for '$shortname'";
         }
 
         $plugin_for->{$shortname} = $plugin;
     }
 
     my $find_sub = sub {
-        my($self,$label) = @_;
+        my($self,$shortname) = @_;
 
-        if (!defined $label) {
+        if (!defined $shortname) {
             die "Not provided name of plugin";
             return;
         }
 
-        my $name = $plugin_for->{$label} || undef;
+        my $name = $plugin_for->{$shortname} || undef;
         if (!defined $name) {
-            die "Not possible to load module '$label'";
+            die "Not possible to load module '$shortname'";
         }
 
 
         # use an existing instance or create a new one.. and keep ref to it
-        my $instance = $instance_of->{$label}
+        my $instance = $instance_of->{$shortname}
             || (defined $name ? $name->new() : undef);
 
-        if ($instance && not defined $instance_of->{$label}) {
-            $instance_of->{$label} = $instance;
+        if ($instance && not defined $instance_of->{$shortname}) {
+            $instance_of->{$shortname} = $instance;
         }
 
         return $instance;
     };
 
     my $plugin_sub = sub {
-        my($self,$name) = @_;
+        my($self,$shortname) = @_;
 
-        return keys %{$plugin_for} if (!defined $name);
+        return keys %{$plugin_for} if (!defined $shortname);
         
-        return defined $plugin_for->{$name}
-            ? $plugin_for->{$name} : undef;
+        return defined $plugin_for->{$shortname}
+            ? $plugin_for->{$shortname} : undef;
     };
 
     my $call_sub = sub {
-        my $self = shift @_;
-        my $label = shift @_;
-        my $method = shift @_;
+        my($self,$shortname,$method) = shift @_;
 
-        if (!defined $label) {
-            die __PACKAGE__ .": Plugin name not provided";
+        if (!defined $shortname) {
+            die "$caller: Plugin name not provided";
             return;
         }
 
@@ -135,17 +154,22 @@ sub import {
         }
 
 
-        my $instance = $self->find($label);
+        my $instance = $self->find($shortname);
         if (!$instance->can($method)) {
-            die "Cannot call '$method' on '$label' plugin";
+            die "Cannot call '$method' on '$shortname' plugin";
         }
 
         return $instance->$method(@_);
     };
 
+    my $plugins_sub = sub {
+        my($self) = @_;
+        $finder->plugins(@_);
+    };
     no strict 'refs';
     no warnings qw(redefine prototype);
 
+    *{"$caller\::$sub_name"} = $plugins_sub;
     *{"$caller\::find"} = $find_sub;
     *{"$caller\::plugin"} = $plugin_sub;
     *{"$caller\::call"} = $call_sub;

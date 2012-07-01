@@ -8,8 +8,10 @@ use warnings;
 #extends 'Me::Plugin';
 #use base qw/Me::Plugin/;
 #use Me::Plugin;
+#use Module::Pluggable::Singleton search_path => 'XT::Business::Logic';
 use Module::Pluggable::Singleton;
 
+#use parent 'Module::Pluggable::Singleton';
 
 #has 'namespace' => (
 #    is          => 'ro',
