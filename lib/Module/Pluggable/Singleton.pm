@@ -12,7 +12,7 @@ Module::Pluggable::Singleton - call/return single plugins on demand using shorte
 
 =cut
 
-our $VERSION = '0.02.3';
+our $VERSION = '0.03';
 
 =head1 SYNOPSIS
 

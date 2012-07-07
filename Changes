@@ -6,3 +6,4 @@ Revision history for Module-Pluggable-Singleton
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+        Created class to extend Module::Pluggable::Object
