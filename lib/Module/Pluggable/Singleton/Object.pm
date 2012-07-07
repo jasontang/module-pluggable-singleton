@@ -1,11 +1,22 @@
 package Module::Pluggable::Singleton::Object;
+{
+  $Module::Pluggable::Singleton::Object::VERSION = '0.2.2';
+}
+{
+  $Module::Pluggable::Singleton::Object::DIST = 'Module-Pluggable-Singleton';
+}
 
 use parent 'Module::Pluggable::Object';
 use Carp qw/croak confess/;
+use Data::Dump q/pp/;
 
 =head1 NAME
 
 Module::Pluggable::Singleton::Object
+
+=head1 VERSION
+
+version 0.2.2
 
 =head1 METHODS
 
@@ -17,32 +28,31 @@ sub new {
     my $class = shift;
     my %opts  = @_;
  
-    my $self =  bless \%opts, $class;
+    $opts{require} = 1;
+    my $self = Module::Pluggable::Object->new(%opts);
 
-    # build
-    $self->_parse_plugins($opts{package});
+    my $self = bless $self, $class;
+
+    $self->_parse_plugins($class);
 
     return $self;
 }
 
 
-
 sub _parse_plugins {
     my($self,$caller) = @_;
-#    $opts{require} = 1; # you find out earlier if it has a syntax error
-#    $opts{package} = $caller;
-
 
     if (!$self->{search_path}) {
         $self->{search_path} = "${caller}::Plugin";
-use Data::Dump q/pp/;
-        print pp($self->{search_path}) ."\n";
     }
     if ($self->{search_path}) {
         if (ref($self->{search_path}) eq '') {
             $self->{search_path} = [$self->{search_path}];
         }
     }
+
+    warn "SEARCH_PATH: ". pp($self->{search_path})i
+        if ($self->{debug});
 
 
     my $namespace  = "${caller}::". ucfirst($self->{sub_name} || 'plugins');
@@ -58,7 +68,6 @@ use Data::Dump q/pp/;
             $shortname =~ s/^${path}:://;
         }
 
-#die "SHORTNAME: $shortname\n";
 # FIXME:
 #        if (not $plugin->isa($base_class)) {
 #            confess __PACKAGE__ .": plugin '$shortname' needs to implement "
