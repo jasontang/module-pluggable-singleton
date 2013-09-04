@@ -12,8 +12,6 @@ Module::Pluggable::Singleton - call/return single plugins on demand using shorte
 
 =cut
 
-our $VERSION = '0.04';
-
 =head1 SYNOPSIS
 
     package MyPluggable;
